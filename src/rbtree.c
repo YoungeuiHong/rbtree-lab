@@ -1,5 +1,5 @@
 #include "rbtree.h"
-
+#include <stdio.h>
 #include <stdlib.h>
 
 rbtree *new_rbtree(void)
@@ -42,62 +42,188 @@ void delete_rbtree(rbtree *t)
   free(t);
 }
 
+// left-rotate
+void left_rotate(rbtree *t, node_t *x)
+{
+  node_t *y = x->right;
+  x->right = y->left;
+  if (y->left != NULL)
+  {
+    y->left->parent = x;
+  }
+  y->parent = x->parent;
+  if (x->parent == NULL)
+  {
+    t->root = y;
+  }
+  else if (x == x->parent->left)
+  {
+    x->parent->left = y;
+  }
+  else
+  {
+    x->parent->right = y;
+  }
+
+  y->left = x;
+  x->parent = y;
+}
+
+// right-rotate
+void right_rotate(rbtree *t, node_t *x)
+{
+  node_t *y = x->left;
+  x->left = y->right;
+  if (y->right != NULL)
+  {
+    y->right->parent = x;
+  }
+  y->parent = x->parent;
+  if (x->parent == NULL)
+  {
+    t->root = y;
+  }
+  else if (x == x->parent->left)
+  {
+    x->parent->left = y;
+  }
+  else
+  {
+    x->parent->right = y;
+  }
+
+  y->right = x;
+  x->parent = y;
+}
+
 node_t *rbtree_insert(rbtree *t, const key_t key)
 {
-  // 새로 추가할 노드를 메모리 할당하고 초기화하기
+  // 새로 추가할 노드 메모리 할당하기
   struct node_t *newNode = calloc(1, sizeof(struct node_t));
+
+  // 메모리 할당에 실패한 경우 NULL 리턴
+  if (newNode == NULL)
+  {
+    return NULL;
+  }
+
+  // 새로 추가할 노드 값 초기화
   newNode->color = RBTREE_RED;
   newNode->key = key;
   newNode->parent = NULL;
   newNode->left = NULL;
   newNode->right = NULL;
 
-  // 만약 트리가 비어있는 상태라면 추가하고 리턴하기
+  // 만약 트리가 비어있는 상태라면 루트 노드를 추가하고 리턴하기
   if (t->root == NULL)
   {
     t->root = newNode;
+    t->root->color = RBTREE_BLACK; // 루트노드는 검은색
     return newNode;
   }
 
-  struct node_t *curr = t->root;
+  struct node_t *curr = t->root; // 새로 추가할 노드와 비교할 노드
+  struct node_t *prev = NULL;    // 새로 추가할 노드의 부모가 될 노드
 
+  // sentinel 노드에 이를 때까지 내려가기
   while (curr != NULL)
   {
-    // 넣으려는 값에 해당되는 노드가 이미 존재하는 경우 삽입하지 않고 NULL 리턴
-    if (key == curr->key)
-    {
-      free(newNode);
-      return NULL;
-    }
-    // 넣으려는 값이 현재 노드의 값보다 작은 경우
+    prev = curr;
     if (key < curr->key)
-    {
-      // 현재 노드의 왼쪽 자식 노드가 없으면 왼쪽 자식 노드로 추가하고 반복문 종료
-      if (curr->left == NULL)
-      {
-        newNode->parent = curr;
-        curr->left = newNode;
-        break;
-      }
-      // 왼쪽 노드로 포커스 이동
-      curr = curr->left;
+    {                    // 넣으려는 값이 현재 노드의 값보다 작은 경우
+      curr = curr->left; // 왼쪽 노드로 포커스 이동
     }
-    // 넣으려는 값이 현재 노드의 값보다 큰 경우
-    if (key > curr->key)
-    {
-      // 현재 노드의 오른쪽 자식 노드가 없으면 오른쪽 자식 노드로 추가하고 반복문 종료
-      if (curr->right == NULL)
-      {
-        newNode->parent = curr;
-        curr->right = newNode;
-        break;
-      }
-      // 오른쪽 노드로 포커스 이동
-      curr = curr->right;
+    else
+    {                     // 넣으려는 값이 현재 노드의 값보다 크거나 같은 경우
+      curr = curr->right; // 오른쪽 노드로 포커스 이동
     }
   }
 
-  return t->root;
+  // 노드를 추가할 위치를 찾은 경우 새로 추가할 노드의 부모 노드 설정
+  newNode->parent = prev;
+
+  // 부모 노드의 왼쪽 자식 또는 오른쪽 자식으로 추가
+  if (newNode->key < prev->key)
+  {
+    prev->left = newNode;
+  }
+  else
+  {
+    prev->right = newNode;
+  }
+
+  // 새로 추가하는 노드의 부모 노드의 색깔이 빨간색일 때까지 반복문 진행
+  while (newNode != t->root && newNode->parent->parent != NULL && newNode->parent->color == RBTREE_RED)
+  {
+    if (newNode->parent == newNode->parent->parent->left)
+    { // 부모 노드가 할아버지 노드의 왼쪽 자식인 경우
+      node_t *uncle = newNode->parent->parent->right;
+
+      // Case 1. 부모 노드와 삼촌 노드의 색깔이 빨간색인 경우
+      if (uncle != NULL && uncle->color == RBTREE_RED)
+      {
+        newNode->parent->color = RBTREE_BLACK;
+        uncle->color = RBTREE_BLACK;
+
+        newNode->parent->parent->color = RBTREE_RED;
+
+        newNode = newNode->parent->parent; // 할아버지 노드로 포커싱 이동
+      }
+
+      else
+      {
+        // Case 2. 삼촌 노드는 검은색이고 새로운 노드가 오른쪽 자식으로 추가된 경우
+        if (newNode == newNode->parent->right)
+        {
+          newNode = newNode->parent;
+          left_rotate(t, newNode);
+        }
+
+        // Case 3. 삼촌 노드는 검은색이고 새로운 노드가 왼쪽 자식으로 추가된 경우
+        else
+        {
+          newNode->parent->color = RBTREE_BLACK;
+          newNode->parent->parent->color = RBTREE_RED;
+          right_rotate(t, newNode->parent->parent);
+        }
+      }
+    }
+    // 부모 노드가 할아버지 노드의 오른쪽 자식인 경우
+    else
+    {
+      node_t *uncle = newNode->parent->parent->left;
+
+      // Case 1. 부모 노드와 삼촌 노드의 색깔이 빨간색인 경우
+      if (uncle != NULL && uncle->color == RBTREE_RED)
+      {
+        newNode->parent->color = RBTREE_BLACK;
+        uncle->color = RBTREE_BLACK;
+        newNode->parent->parent->color = RBTREE_RED;
+        newNode = newNode->parent->parent; // 할아버지 노드로 포커싱 이동
+      }
+      else
+      {
+        // Case 2. 삼촌 노드는 검은색이고 새로운 노드가 오른쪽 자식으로 추가된 경우
+        if (newNode == newNode->parent->left)
+        {
+          newNode = newNode->parent;
+          right_rotate(t, newNode);
+        }
+
+        // Case 3. 삼촌 노드는 검은색이고 새로운 노드가 왼쪽 자식으로 추가된 경우
+        else
+        {
+          newNode->parent->color = RBTREE_BLACK;
+          newNode->parent->parent->color = RBTREE_RED;
+          left_rotate(t, newNode->parent->parent);
+        }
+      }
+    }
+  }
+
+  t->root->color = RBTREE_BLACK;
+
+  return newNode;
 }
 
 // const 키워드가 붙어있으면 변경 불가능
