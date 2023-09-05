@@ -8,6 +8,7 @@ void transplant(rbtree *t, node_t *from, node_t *to);
 node_t *tree_minimum(rbtree *t, node_t *root);
 void delete_fixup(rbtree *t, node_t *x);
 void delete_node(rbtree *t, node_t *node);
+void inorder(const rbtree *t, key_t *arr, node_t *node, int *order);
 
 rbtree *new_rbtree(void)
 {
@@ -438,8 +439,24 @@ int rbtree_erase(rbtree *t, node_t *p)
   return 0;
 }
 
+void inorder(const rbtree *t, key_t *arr, node_t *node, int *order)
+{
+  if (node == t->nil)
+  {
+    return;
+  }
+
+  inorder(t, arr, node->left, order);
+
+  arr[*order] = node->key;
+  (*order)++;
+
+  inorder(t, arr, node->right, order);
+}
+
 int rbtree_to_array(const rbtree *t, key_t *arr, const size_t n)
 {
-  // TODO: implement to_array
+  int order = 0;
+  inorder(t, arr, t->root, &order);
   return 0;
 }
