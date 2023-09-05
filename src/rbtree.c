@@ -12,7 +12,7 @@ void delete_node(rbtree *t, node_t *node);
 void inorder(const rbtree *t, key_t *arr, node_t *node, int *order);
 
 /*
-🔴⚫️ RB 트리 생성 함수
+🔴⚫️ RB 트리 구조체 생성 함수
 */
 rbtree *new_rbtree(void)
 {
@@ -61,7 +61,7 @@ void delete_node(rbtree *t, node_t *node)
 }
 
 /*
-🔴⚫️ RB 트리 삭제 함수
+🔴⚫️ RB tree 구조체가 사용했던 메모리를 모두 반환하는 함수
 */
 void delete_rbtree(rbtree *t)
 {
@@ -275,7 +275,7 @@ node_t *rbtree_insert(rbtree *t, const key_t key)
 }
 
 /*
-🔴⚫️ 주어진 key에 해당되는 노드를 찾는 함수
+🔴⚫️ 주어진 key에 해당되는 노드의 포인터를 반환하는 함수
 */
 node_t *rbtree_find(const rbtree *t, const key_t key)
 {
@@ -302,7 +302,7 @@ node_t *rbtree_find(const rbtree *t, const key_t key)
 }
 
 /*
-🔴⚫️ RB 트리 내에서 최소값을 가진 노드를 찾는 함수
+🔴⚫️ RB 트리 내에서 최소값을 가진 노드의 포인터를 반환하는 함수
 */
 node_t *rbtree_min(const rbtree *t)
 {
@@ -315,7 +315,7 @@ node_t *rbtree_min(const rbtree *t)
 }
 
 /*
-🔴⚫️ RB 트리 내에서 최대값을 가진 노드를 찾는 함수
+🔴⚫️ RB 트리 내에서 최대값을 가진 노드의 포인터를 반환하는 함수
 */
 node_t *rbtree_max(const rbtree *t)
 {
@@ -450,7 +450,7 @@ void delete_fixup(rbtree *t, node_t *x)
 }
 
 /*
-🔴⚫️ RB 트리에서 인자로 주어진 노드를 삭제하는 함수
+🔴⚫️ RB 트리에서 인자로 주어진 노드를 삭제하고 메모리를 반환하는 함수
 */
 int rbtree_erase(rbtree *t, node_t *p)
 {
@@ -525,7 +525,8 @@ void inorder(const rbtree *t, key_t *arr, node_t *node, int *order)
 }
 
 /*
-🔴⚫️ RB 트리를 오름차순으로 정렬된 배열로 변환하는 함수
+🔴⚫️ RB 트리를 key를 기준으로 오름차순으로 정렬된 배열로 변환하는 함수
+array의 크기는 n으로 주어지며 tree의 크기가 n 보다 큰 경우에는 순서대로 n개 까지만 변환
 */
 int rbtree_to_array(const rbtree *t, key_t *arr, const size_t n)
 {
