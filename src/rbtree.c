@@ -216,27 +216,27 @@ void rb_insert_fixup(rbtree *t, node_t *node)
 node_t *rbtree_insert(rbtree *t, const key_t key)
 {
   // 새로 추가할 노드 메모리 할당하기
-  struct node_t *newNode = calloc(1, sizeof(struct node_t));
+  struct node_t *new_node = calloc(1, sizeof(struct node_t));
 
   // 메모리 할당에 실패한 경우 NULL 리턴
-  if (newNode == NULL)
+  if (new_node == NULL)
   {
     return NULL;
   }
 
   // 새로 추가할 노드 값 초기화
-  newNode->color = RBTREE_RED;
-  newNode->key = key;
-  newNode->parent = t->nil;
-  newNode->left = t->nil;
-  newNode->right = t->nil;
+  new_node->color = RBTREE_RED;
+  new_node->key = key;
+  new_node->parent = t->nil;
+  new_node->left = t->nil;
+  new_node->right = t->nil;
 
   // 만약 트리가 비어있는 상태라면 루트 노드를 추가하고 리턴하기
   if (t->root == t->nil)
   {
-    t->root = newNode;
+    t->root = new_node;
     t->root->color = RBTREE_BLACK; // 루트노드는 검은색
-    return newNode;
+    return new_node;
   }
 
   struct node_t *curr = t->root; // 새로 추가할 노드와 비교할 노드
@@ -257,21 +257,21 @@ node_t *rbtree_insert(rbtree *t, const key_t key)
   }
 
   // 노드를 추가할 위치를 찾은 경우 새로 추가할 노드의 부모 노드 설정
-  newNode->parent = prev;
+  new_node->parent = prev;
 
   // 부모 노드의 왼쪽 자식 또는 오른쪽 자식으로 추가
-  if (newNode->key < prev->key)
+  if (new_node->key < prev->key)
   {
-    prev->left = newNode;
+    prev->left = new_node;
   }
   else
   {
-    prev->right = newNode;
+    prev->right = new_node;
   }
 
-  rb_insert_fixup(t, newNode);
+  rb_insert_fixup(t, new_node);
 
-  return newNode;
+  return new_node;
 }
 
 /*
