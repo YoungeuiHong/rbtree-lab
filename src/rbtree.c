@@ -2,6 +2,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+void left_rotate(rbtree *t, node_t *x);
+void right_rotate(rbtree *t, node_t *x);
+void transplant(rbtree *t, node_t *from, node_t *to);
+node_t *tree_minimum(node_t *root);
+void delete_fixup(rbtree *t, node_t *x);
+
 rbtree *new_rbtree(void)
 {
   // RB Tree 포인터
@@ -256,73 +262,171 @@ node_t *rbtree_max(const rbtree *t)
   return t->root;
 }
 
-int rbtree_erase(rbtree *t, node_t *p)
+//
+void transplant(rbtree *t, node_t *u, node_t *v)
 {
-  // 만약 삭제하려는 노드가 루트 노드인 경우
-  if (p == t->root)
+  if (u->parent == NULL)
+    t->root = v;
+  else if (u == u->parent->left)
+    u->parent->left = v;
+  else
+    u->parent->right = v;
+
+  if (v != NULL)
+    v->parent = u->parent;
+}
+
+node_t *tree_minimum(node_t *root)
+{
+  node_t *curr = root;
+  while (curr != NULL && curr->left != NULL)
   {
-    free(p);
-    t->root = NULL;
-    return 0;
+    curr = curr->left;
   }
+  return curr;
+}
 
-  // 삭제하려는 노드 찾기
-  node_t *parent = NULL;
-  node_t *target = t->root;
-
-  while (target != p)
+node_t *tree_successor(node_t *x)
+{
+  if (x->right != NULL)
   {
-    parent = target;
-    if (target->key < p->key)
+    return tree_minimum(x->right);
+  }
+  else
+  {
+    node_t *y = x->parent;
+    while (y != NULL && x == y->right)
     {
-      target = target->right;
+      x = y;
+      y = y->parent;
+    }
+    return y;
+  }
+}
+
+void delete_fixup(rbtree *t, node_t *x)
+{
+  while (x != t->root && x->color == RBTREE_BLACK)
+  {
+    if (x == x->parent->left)
+    {
+      node_t *w = x->parent->right;
+      // Case 1
+      if (w->color == RBTREE_RED)
+      {
+        w->color = RBTREE_BLACK;
+        x->parent->color = RBTREE_RED;
+        left_rotate(t, x->parent);
+        w = x->parent->right;
+      }
+
+      // Case 2
+      if (w->left->color == RBTREE_BLACK && w->right->color == RBTREE_BLACK)
+      {
+        w->color = RBTREE_RED;
+        x = x->parent;
+      }
+      else
+      {
+        // Case 3
+        if (w->right->color == RBTREE_BLACK)
+        {
+          w->left->color = RBTREE_BLACK;
+          w->color = RBTREE_RED;
+          right_rotate(t, w);
+          w = x->parent->right;
+        }
+        // Case 4
+        w->color = x->parent->color;
+        x->parent->color = RBTREE_BLACK;
+        w->right->color = RBTREE_BLACK;
+        left_rotate(t, x->parent);
+        x = t->root;
+      }
     }
     else
     {
-      target = target->left;
+      node_t *w = x->parent->left;
+      // Case 1
+      if (w->color == RBTREE_RED)
+      {
+        w->color = RBTREE_BLACK;
+        x->parent->color = RBTREE_RED;
+        right_rotate(t, x->parent);
+        w = x->parent->left;
+      }
+
+      // Case 2
+      if (w->right->color == RBTREE_BLACK && w->left->color == RBTREE_BLACK)
+      {
+        w->color = RBTREE_RED;
+        x = x->parent;
+      }
+      else
+      {
+        // Case 3
+        if (w->left->color == RBTREE_BLACK)
+        {
+          w->right->color = RBTREE_BLACK;
+          w->color = RBTREE_RED;
+          left_rotate(t, w);
+          w = x->parent->left;
+        }
+        // Case 4
+        w->color = x->parent->color;
+        x->parent->color = RBTREE_BLACK;
+        w->left->color = RBTREE_BLACK;
+        right_rotate(t, x->parent);
+        x = t->root;
+      }
     }
   }
+  x->color = RBTREE_BLACK;
+}
 
-  // 1) 자식 노드가 없는 노드를 삭제하는 경우
-  if (target->left == NULL && target->right == NULL)
+int rbtree_erase(rbtree *t, node_t *p)
+{
+  node_t *del = p;                     // 삭제할 노드 y
+  color_t original_color = del->color; // 삭제할 노드의 원래 색상
+  node_t *base;                        // 트리 재조정의 기준점이 될 노드 x
+
+  if (p->left == NULL)
   {
-    free(target);
-    return 0;
+    base = p->right;
+    transplant(t, p, p->right);
   }
-
-  // 2-1) 자식 노드가 한 개인 노드를 삭제하는 경우: 왼쪽 노드만 있는 경우
-  else if (target->left != NULL && target->right == NULL)
+  else if (p->right == NULL)
   {
-    parent->left = target->left;
-    free(target);
-    return 0;
+    base = p->left;
+    transplant(t, p, p->left);
   }
-
-  // 2-1) 자식 노드가 한 개인 노드를 삭제하는 경우: 오른쪽 노드만 있는 경우
-  else if (target->left == NULL && target->right != NULL)
-  {
-    parent->right = target->right;
-    free(target);
-    return 0;
-  }
-
-  // 3) 자식 노드가 두 개인 경우
   else
   {
-    // 더 이상 왼쪽 자식이 없을 때까지 타고 내려가서 successor(오른쪽 서브트리에서 제일 작은 값을 가진 노드) 찾기
-    node_t *parent = target;
-    node_t *successor = target->left;
-    while (successor->left != NULL)
+    // del = tree_minimum(p->right); // successor 찾기
+    del = tree_successor(p); // successor 찾기
+    original_color = del->color;
+    base = del->right;
+    if (del != p->right)
     {
-      parent = successor;
-      successor = successor->left;
+      transplant(t, del, del->right);
+      del->right = p->right;
+      del->right->parent = del;
     }
-    // 삭제하려는 노드의 값을 successor 노드의 값으로 바꾸기
-    target->key = successor->key;
-    // successor 노드의 오른쪽 자식이 있다면 successor의 부모 노드의 왼쪽 자식으로 붙여주기
-    parent->left = successor->right;
-    // successor 노드 메모리 해제
-    free(successor);
+    else
+    {
+      base->parent = del;
+    }
+    transplant(t, p, del);
+    del->left = p->left;
+    del->left->parent = del;
+    del->color = p->color;
+  }
+
+  free(p);
+
+  if (original_color == RBTREE_BLACK)
+  {
+    delete_fixup(t, base);
   }
 
   return 0;
