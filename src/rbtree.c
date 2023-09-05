@@ -7,6 +7,7 @@ void right_rotate(rbtree *t, node_t *x);
 void transplant(rbtree *t, node_t *from, node_t *to);
 node_t *tree_minimum(rbtree *t, node_t *root);
 void delete_fixup(rbtree *t, node_t *x);
+void delete_node(rbtree *t, node_t *node);
 
 rbtree *new_rbtree(void)
 {
@@ -40,9 +41,21 @@ rbtree *new_rbtree(void)
   return p;
 }
 
+void delete_node(rbtree *t, node_t *node)
+{
+  if (node == NULL || node == t->nil)
+  {
+    return;
+  }
+  delete_node(t, node->left);
+  delete_node(t, node->right);
+  free(node);
+}
+
 void delete_rbtree(rbtree *t)
 {
-  // TODO: reclaim the tree nodes's memory
+  delete_node(t, t->root);
+  free(t->nil);
   free(t);
 }
 
@@ -247,7 +260,8 @@ node_t *rbtree_find(const rbtree *t, const key_t key)
   }
 
   // key에 해당되는 노드가 없는 경우
-  if (curr == t->nil) {
+  if (curr == t->nil)
+  {
     return NULL;
   }
 
