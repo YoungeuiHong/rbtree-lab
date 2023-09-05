@@ -270,14 +270,22 @@ node_t *rbtree_find(const rbtree *t, const key_t key)
 
 node_t *rbtree_min(const rbtree *t)
 {
-  // TODO: implement find
-  return t->root;
+  node_t *curr = t->root;
+  while (curr != t->nil && curr->left != t->nil)
+  {
+    curr = curr->left;
+  }
+  return curr;
 }
 
 node_t *rbtree_max(const rbtree *t)
 {
-  // TODO: implement find
-  return t->root;
+  node_t *curr = t->root;
+  while (curr != t->nil && curr->right != t->nil)
+  {
+    curr = curr->right;
+  }
+  return curr;
 }
 
 //
