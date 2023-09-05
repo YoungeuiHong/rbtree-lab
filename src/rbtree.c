@@ -11,6 +11,9 @@ void delete_fixup(rbtree *t, node_t *x);
 void delete_node(rbtree *t, node_t *node);
 void inorder(const rbtree *t, key_t *arr, node_t *node, int *order);
 
+/*
+🔴⚫️ RB 트리 생성 함수
+*/
 rbtree *new_rbtree(void)
 {
   // RB Tree 포인터
@@ -39,38 +42,49 @@ rbtree *new_rbtree(void)
   p->root = nil;
   p->nil = nil;
 
-  // rbtree 구조체를 가리키는 포인터 p를 반환
+  // rbtree 포인터 반환
   return p;
 }
 
+/*
+🔴⚫️ RB 트리의 모든 노드의 메모리를 해제하는 함수
+*/
 void delete_node(rbtree *t, node_t *node)
 {
-  if (node == NULL || node == t->nil)
+  if (node == t->nil)
   {
     return;
   }
-  delete_node(t, node->left);
-  delete_node(t, node->right);
-  free(node);
+  delete_node(t, node->left); // 왼쪽 노드 탐색
+  delete_node(t, node->right); // 오른쪽 노드 탐색
+  free(node); // 메모리 해제
 }
 
+/*
+🔴⚫️ RB 트리 삭제 함수
+*/
 void delete_rbtree(rbtree *t)
 {
-  delete_node(t, t->root);
-  free(t->nil);
-  free(t);
+  delete_node(t, t->root); // 루트 노드를 포함한 모든 노드의 메모리 해제
+  free(t->nil); // nil 노드 메모리 해제
+  free(t); // RB Tree 메모리 해제
 }
 
-// left-rotate
+/*
+🔴⚫️ 주어진 노드를 기준으로 RB 트리를 왼쪽으로 회전시키는 함수
+*/
 void left_rotate(rbtree *t, node_t *x)
 {
+  // x는 아래로 내려가는 노드, y는 위로 올라가는 노드
   node_t *y = x->right;
+  // y의 왼쪽 서브트리를 x의 오른쪽 서브트리로 옮김
   x->right = y->left;
   if (y->left != t->nil)
   {
     y->left->parent = x;
   }
   y->parent = x->parent;
+  // 만약 x가 루트 노드였다면 트리의 루트 노드를 y로 변경
   if (x->parent == t->nil)
   {
     t->root = y;
@@ -88,9 +102,12 @@ void left_rotate(rbtree *t, node_t *x)
   x->parent = y;
 }
 
-// right-rotate
+/*
+🔴⚫️ 주어진 노드를 기준으로 RB 트리를 오른쪽으로 회전시키는 함수
+*/
 void right_rotate(rbtree *t, node_t *x)
 {
+  // x는 아래로 내려가는 노드, y는 위로 올라가는 노드
   node_t *y = x->left;
   x->left = y->right;
   if (y->right != t->nil)
@@ -98,6 +115,7 @@ void right_rotate(rbtree *t, node_t *x)
     y->right->parent = x;
   }
   y->parent = x->parent;
+  // 만약 x가 루트 노드였다면 트리의 루트 노드를 y로 변경
   if (x->parent == t->nil)
   {
     t->root = y;
@@ -115,6 +133,9 @@ void right_rotate(rbtree *t, node_t *x)
   x->parent = y;
 }
 
+/*
+🔴⚫️ RB 트리에 노드를 삽입한 후 RB 트리의 속성을 충족할 수 있도록 재조정하는 함수
+*/
 void rb_insert_fixup(rbtree *t, node_t *node)
 {
     // 새로 추가하는 노드의 부모 노드의 색깔이 빨간색일 때까지 반복문 진행
@@ -189,6 +210,9 @@ void rb_insert_fixup(rbtree *t, node_t *node)
   t->root->color = RBTREE_BLACK;
 }
 
+/*
+🔴⚫️ RB 트리에 새로운 노드를 삽입하는 함수
+*/
 node_t *rbtree_insert(rbtree *t, const key_t key)
 {
   // 새로 추가할 노드 메모리 할당하기
@@ -250,6 +274,9 @@ node_t *rbtree_insert(rbtree *t, const key_t key)
   return newNode;
 }
 
+/*
+🔴⚫️ 주어진 key에 해당되는 노드를 찾는 함수
+*/
 node_t *rbtree_find(const rbtree *t, const key_t key)
 {
   node_t *curr = t->root;
@@ -265,7 +292,7 @@ node_t *rbtree_find(const rbtree *t, const key_t key)
     }
   }
 
-  // key에 해당되는 노드가 없는 경우
+  // 주어진 key에 해당되는 노드가 없는 경우
   if (curr == t->nil)
   {
     return NULL;
@@ -274,6 +301,9 @@ node_t *rbtree_find(const rbtree *t, const key_t key)
   return curr;
 }
 
+/*
+🔴⚫️ RB 트리 내에서 최소값을 가진 노드를 찾는 함수
+*/
 node_t *rbtree_min(const rbtree *t)
 {
   node_t *curr = t->root;
@@ -284,6 +314,9 @@ node_t *rbtree_min(const rbtree *t)
   return curr;
 }
 
+/*
+🔴⚫️ RB 트리 내에서 최대값을 가진 노드를 찾는 함수
+*/
 node_t *rbtree_max(const rbtree *t)
 {
   node_t *curr = t->root;
@@ -307,6 +340,9 @@ void transplant(rbtree *t, node_t *u, node_t *v)
   v->parent = u->parent;
 }
 
+/*
+🔴⚫️ 주어진 노드의 오른쪽 서브트리에서 최소값을 가진 노드를 찾는 함수
+*/
 node_t *tree_minimum(rbtree *t, node_t *root)
 {
   node_t *curr = root;
@@ -317,23 +353,29 @@ node_t *tree_minimum(rbtree *t, node_t *root)
   return curr;
 }
 
+/*
+🔴⚫️ 노드 삭제 후 RB 트리의 속성을 충족할 수 있도록 재조정하는 함수
+*/
 void delete_fixup(rbtree *t, node_t *x)
 {
+  // while문에서 x는 항상 non-root doubly black node
   while (x != t->root && x->color == RBTREE_BLACK)
   {
     if (x == x->parent->left)
     {
       node_t *w = x->parent->right;
-      // Case 1
+      // Case 1. x의 형제 w가 빨간색 노드일 때
       if (w->color == RBTREE_RED)
       {
+        // w의 색상과 x->parent의 색상을 교환
         w->color = RBTREE_BLACK;
         x->parent->color = RBTREE_RED;
         left_rotate(t, x->parent);
         w = x->parent->right;
+        // => 이 과정을 마치면 Case 2, 3, 4 중 하나에 해당하게 됨
       }
 
-      // Case 2
+      // Case 2. x의 형제 w가 검은색 노드이고, w의 자식들이 모두 검은색 노드일 때
       if (w->left->color == RBTREE_BLACK && w->right->color == RBTREE_BLACK)
       {
         w->color = RBTREE_RED;
@@ -341,26 +383,31 @@ void delete_fixup(rbtree *t, node_t *x)
       }
       else
       {
-        // Case 3
+        // Case 3. x의 형제 w가 검은색 노드이고, w의 왼쪽 자식은 빨간색 노드, w의 오른쪽 자식은 검은색 노드일 때
         if (w->right->color == RBTREE_BLACK)
         {
+          // w의 색상과 w->left의 색상을 교환한 다음 오른쪽 회전
           w->left->color = RBTREE_BLACK;
           w->color = RBTREE_RED;
           right_rotate(t, w);
           w = x->parent->right;
+          // => 이 과정을 마치면 Case 4.로 가게 됨
         }
-        // Case 4
+
+        // Case 4. x의 형제 w가 검은색 노드이고, w의 오른쪽 자식이 빨간색 노드일 때
         w->color = x->parent->color;
         x->parent->color = RBTREE_BLACK;
         w->right->color = RBTREE_BLACK;
+        // x->parent를 기준으로 왼쪽으로 회전하여 x에 있는 extra black 제거
         left_rotate(t, x->parent);
+        // x를 루트로 변경하여 while문 종료
         x = t->root;
       }
     }
     else
     {
       node_t *w = x->parent->left;
-      // Case 1
+      // Case 1. x의 형제 w가 빨간색 노드일 때
       if (w->color == RBTREE_RED)
       {
         w->color = RBTREE_BLACK;
@@ -369,15 +416,19 @@ void delete_fixup(rbtree *t, node_t *x)
         w = x->parent->left;
       }
 
-      // Case 2
+      // Case 2. x의 형제 w가 검은색 노드이고, w의 자식들이 모두 검은색 노드일 때
       if (w->right->color == RBTREE_BLACK && w->left->color == RBTREE_BLACK)
       {
+        // doubly black이었던 x를 검은색 노드 하나만 가지고 있게 하고, w는 빨간색 노드로 변경함
         w->color = RBTREE_RED;
+        // x와 w가 검은색 노드를 읽은 것을 보상하기 위해 x->parent에 extra black을 더해줌
+        // case 1.을 거쳐 case 2.로 온 경우 x->parent는 빨간색이었기 때문에 새로운 x는 red and black
+        // x는 결국 빨간색 노드가 되어 다음 while문에서 종료됨. 그리고 마지막에 x를 검정색 노드로 변경해줌
         x = x->parent;
       }
       else
       {
-        // Case 3
+        // Case 3. x의 형제 w가 검은색 노드이고, w의 왼쪽 자식은 검은색 노드, w의 오른쪽 자식은 빨간색 노드일 때
         if (w->left->color == RBTREE_BLACK)
         {
           w->right->color = RBTREE_BLACK;
@@ -385,7 +436,8 @@ void delete_fixup(rbtree *t, node_t *x)
           left_rotate(t, w);
           w = x->parent->left;
         }
-        // Case 4
+
+        // Case 4. x의 형제 w가 검은색 노드이고, w의 왼쪽 자식이 빨간색 노드일 때
         w->color = x->parent->color;
         x->parent->color = RBTREE_BLACK;
         w->left->color = RBTREE_BLACK;
@@ -397,6 +449,9 @@ void delete_fixup(rbtree *t, node_t *x)
   x->color = RBTREE_BLACK;
 }
 
+/*
+🔴⚫️ RB 트리에서 인자로 주어진 노드를 삭제하는 함수
+*/
 int rbtree_erase(rbtree *t, node_t *p)
 {
   node_t *del = p;                     // 삭제할 노드 y
@@ -406,11 +461,13 @@ int rbtree_erase(rbtree *t, node_t *p)
   if (p->left == t->nil)
   {
     base = p->right;
+    // p를 p의 오른쪽 자식 노드로 대체
     transplant(t, p, p->right);
   }
   else if (p->right == t->nil)
   {
     base = p->left;
+    // p를 p의 왼쪽 자식 노드로 대체
     transplant(t, p, p->left);
   }
   else
@@ -418,14 +475,17 @@ int rbtree_erase(rbtree *t, node_t *p)
     del = tree_minimum(t, p->right); // successor 찾기
     original_color = del->color;
     base = del->right;
+    // 만약 successor가 p의 오른쪽 자식 노드가 아닌 경우
     if (del != p->right)
     {
+      // successor을 successor의 오른쪽 sub tree로 교체
       transplant(t, del, del->right);
       del->right = p->right;
       del->right->parent = del;
     }
     else
     {
+      // base(successor의 오른쪽 자식 노드)가 nil 노드인 경우를 위해 parent 값 설정해주기
       base->parent = del;
     }
     transplant(t, p, del);
@@ -434,8 +494,10 @@ int rbtree_erase(rbtree *t, node_t *p)
     del->color = p->color;
   }
 
+  // 삭제하려는 노드의 메모리 해제하기
   free(p);
 
+  // 검은색 노드를 삭제한 경우 RB 트리 속성이 깨질 수 있으므로 재조정 작업하기
   if (original_color == RBTREE_BLACK)
   {
     delete_fixup(t, base);
@@ -444,6 +506,9 @@ int rbtree_erase(rbtree *t, node_t *p)
   return 0;
 }
 
+/*
+🔴⚫️ RB 트리 내에서 최소값을 가진 노드를 찾는 함수
+*/
 void inorder(const rbtree *t, key_t *arr, node_t *node, int *order)
 {
   if (node == t->nil)
@@ -459,6 +524,9 @@ void inorder(const rbtree *t, key_t *arr, node_t *node, int *order)
   inorder(t, arr, node->right, order);
 }
 
+/*
+🔴⚫️ RB 트리를 오름차순으로 정렬된 배열로 변환하는 함수
+*/
 int rbtree_to_array(const rbtree *t, key_t *arr, const size_t n)
 {
   int order = 0;
