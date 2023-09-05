@@ -9,7 +9,7 @@ void transplant(rbtree *t, node_t *from, node_t *to);
 node_t *tree_minimum(rbtree *t, node_t *root);
 void delete_fixup(rbtree *t, node_t *x);
 void delete_node(rbtree *t, node_t *node);
-void inorder(const rbtree *t, key_t *arr, node_t *node, int *order);
+void inorder(const rbtree *t, key_t *arr, node_t *node, const size_t n, int *order);
 
 /*
 🔴⚫️ RB 트리 구조체 생성 함수
@@ -55,9 +55,9 @@ void delete_node(rbtree *t, node_t *node)
   {
     return;
   }
-  delete_node(t, node->left); // 왼쪽 노드 탐색
+  delete_node(t, node->left);  // 왼쪽 노드 탐색
   delete_node(t, node->right); // 오른쪽 노드 탐색
-  free(node); // 메모리 해제
+  free(node);                  // 메모리 해제
 }
 
 /*
@@ -66,8 +66,8 @@ void delete_node(rbtree *t, node_t *node)
 void delete_rbtree(rbtree *t)
 {
   delete_node(t, t->root); // 루트 노드를 포함한 모든 노드의 메모리 해제
-  free(t->nil); // nil 노드 메모리 해제
-  free(t); // RB Tree 메모리 해제
+  free(t->nil);            // nil 노드 메모리 해제
+  free(t);                 // RB Tree 메모리 해제
 }
 
 /*
@@ -138,7 +138,7 @@ void right_rotate(rbtree *t, node_t *x)
 */
 void rb_insert_fixup(rbtree *t, node_t *node)
 {
-    // 새로 추가하는 노드의 부모 노드의 색깔이 빨간색일 때까지 반복문 진행
+  // 새로 추가하는 노드의 부모 노드의 색깔이 빨간색일 때까지 반복문 진행
   while (node != t->root && node->parent->color == RBTREE_RED)
   {
     if (node->parent == node->parent->parent->left)
@@ -240,7 +240,7 @@ node_t *rbtree_insert(rbtree *t, const key_t key)
   }
 
   struct node_t *curr = t->root; // 새로 추가할 노드와 비교할 노드
-  struct node_t *prev = t->nil;    // 새로 추가할 노드의 부모가 될 노드
+  struct node_t *prev = t->nil;  // 새로 추가할 노드의 부모가 될 노드
 
   // sentinel 노드에 이를 때까지 내려가기
   while (curr != t->nil)
@@ -509,19 +509,20 @@ int rbtree_erase(rbtree *t, node_t *p)
 /*
 🔴⚫️ RB 트리 내에서 최소값을 가진 노드를 찾는 함수
 */
-void inorder(const rbtree *t, key_t *arr, node_t *node, int *order)
+void inorder(const rbtree *t, key_t *arr, node_t *node, const size_t n, int *order)
 {
-  if (node == t->nil)
+  // n개까지만 배열로 변환
+  if (node == t->nil || *order > n)
   {
     return;
   }
 
-  inorder(t, arr, node->left, order);
+  inorder(t, arr, node->left, n, order);
 
   arr[*order] = node->key;
   (*order)++;
 
-  inorder(t, arr, node->right, order);
+  inorder(t, arr, node->right, n, order);
 }
 
 /*
@@ -531,6 +532,6 @@ array의 크기는 n으로 주어지며 tree의 크기가 n 보다 큰 경우에
 int rbtree_to_array(const rbtree *t, key_t *arr, const size_t n)
 {
   int order = 0;
-  inorder(t, arr, t->root, &order);
+  inorder(t, arr, t->root, n, &order);
   return 0;
 }
