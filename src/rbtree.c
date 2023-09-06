@@ -158,14 +158,14 @@ void rb_insert_fixup(rbtree *t, node_t *node)
 
       else
       {
-        // Case 2. 삼촌 노드는 검은색이고 새로운 노드가 오른쪽 자식으로 추가된 경우
+        // Case 2. 삼촌 노드는 검은색이고 현재 노드가 오른쪽 자식인 경우
         if (node == node->parent->right)
         {
           node = node->parent;
           left_rotate(t, node);
         }
 
-        // Case 3. 삼촌 노드는 검은색이고 새로운 노드가 왼쪽 자식으로 추가된 경우
+        // Case 3. 삼촌 노드는 검은색이고 현재 노드가 왼쪽 자식인 경우
         else
         {
           node->parent->color = RBTREE_BLACK;
@@ -189,14 +189,14 @@ void rb_insert_fixup(rbtree *t, node_t *node)
       }
       else
       {
-        // Case 2. 삼촌 노드는 검은색이고 새로운 노드가 오른쪽 자식으로 추가된 경우
+        // Case 2. 삼촌 노드는 검은색이고 현재 노드가 오른쪽 자식인 경우
         if (node == node->parent->left)
         {
           node = node->parent;
           right_rotate(t, node);
         }
 
-        // Case 3. 삼촌 노드는 검은색이고 새로운 노드가 왼쪽 자식으로 추가된 경우
+        // Case 3. 삼촌 노드는 검은색이고 현재 노드가 왼쪽 자식인 경우
         else
         {
           node->parent->color = RBTREE_BLACK;
@@ -327,7 +327,9 @@ node_t *rbtree_max(const rbtree *t)
   return curr;
 }
 
-//
+/*
+🔴⚫️ 노드 u의 위치로 노드 v를 옮기는 함수
+*/
 void transplant(rbtree *t, node_t *u, node_t *v)
 {
   if (u->parent == t->nil)
